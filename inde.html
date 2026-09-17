@@ -1,1 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>月底求生·4000飯卡</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', 'Noto Sans TC', -apple-system, sans-serif;
+      background-color: #0B0F19;
+      color: #F8FAFC;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .campus-card {
+      background: rgba(17, 24, 39, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    /* 專屬霓虹光圈分塊樣式 */
+    .glow-balance {
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.12), inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+    .glow-action {
+      border: 1px solid rgba(129, 140, 248, 0.35);
+      box-shadow: 0 0 25px rgba(129, 140, 248, 0.12), inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+    .glow-logs {
+      border: 1px solid rgba(139, 92, 246, 0.35);
+      box-shadow: 0 0 25px rgba(139, 92, 246, 0.12), inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+    .glow-archive {
+      border: 1px solid rgba(236, 72, 153, 0.35);
+      box-shadow: 0 0 25px rgba(236, 72, 153, 0.12), inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+    .glow-refill {
+      border: 1px solid rgba(245, 158, 11, 0.5);
+      box-shadow: 0 0 30px rgba(245, 158, 11, 0.2), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+
+    .tag-chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .tag-chip.active {
+      background: rgba(129, 140, 248, 0.25);
+      border-color: rgba(129, 140, 248, 0.6);
+      color: #A5B4FC;
+    }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    ::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body class="min-h-screen pb-16 selection:bg-indigo-500/30">
+
+  <div class="pt-12 px-6 pb-3 flex justify-between items-center">
+    <div>
+      <span class="text-[10px] font-extrabold tracking-widest text-indigo-400 uppercase bg-indigo-500/10 px-2.5 py-1 rounded-full">CAMPUS VIBES</span>
+      <h1 class="text-lg font-black mt-1 text-white">🔥 重生之我有爸媽給的午餐救濟金</h1>
+    </div>
+    <div id="vibes-status" class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20">
+      生存率 100%
+    </div>
+  </div>
+
+  <main class="max-w-[420px] mx-auto px-4 space-y-5 pt-1">
+    
+    <!-- 塊 1：核心餘額光圈卡片 -->
+    <section class="campus-card glow-balance rounded-[32px] p-6 relative overflow-hidden">
+      <div class="flex justify-between items-center mb-5">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold bg-white/10 px-3 py-1 rounded-full text-slate-300" id="cycle-badge">第 1 輪</span>
+        </div>
+        <div class="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-full px-3 py-1 text-xs">
+          <span class="text-slate-400">起算預設</span>
+          <input type="date" id="cycle-start-date-input" onchange="updateCycleStartDate(this.value)" 
+            class="bg-transparent text-slate-200 font-semibold focus:outline-none text-xs w-28">
+        </div>
+      </div>
+
+      <div class="space-y-1">
+        <span class="text-xs font-medium text-slate-400 tracking-wider">剩餘生命維持額度</span>
+        <div class="flex items-baseline gap-1">
+          <span class="text-xl font-bold text-slate-500">$</span>
+          <span id="balance-display" class="text-5xl font-black tracking-tight text-white leading-none">4,000</span>
+        </div>
+      </div>
+
+      <div class="mt-6 space-y-1.5">
+        <div class="flex justify-between text-[11px] text-slate-400 font-medium">
+          <span id="progress-text">已燃燒 0%</span>
+          <span id="spent-total-text">噴掉 $0 / $4,000</span>
+        </div>
+        <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden p-0.5 border border-white/5">
+          <div id="progress-bar" class="bg-gradient-to-r from-emerald-400 via-indigo-400 to-rose-400 h-full rounded-full transition-all duration-500" style="width: 0%;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 塊 2：破產補錢黃金光圈橫幅 (條件顯示) -->
+    <section id="refill-section" class="hidden campus-card glow-refill rounded-[28px] p-5 bg-gradient-to-br from-amber-500/15 via-transparent to-transparent space-y-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-amber-500/20 flex items-center justify-center text-lg">🍜</div>
+        <div>
+          <div class="text-sm font-bold text-amber-300">4,000 午餐救濟金已見底！</div>
+          <div class="text-xs text-amber-200/70">恭喜撐完這輪，準備領下一筆</div>
+        </div>
+      </div>
+      <button onclick="refillMoney()" 
+        class="w-full bg-amber-400 hover:bg-amber-300 active:scale-[0.98] text-slate-950 font-extrabold py-3.5 rounded-2xl shadow-lg transition text-sm">
+        ✨ 領取 $4,000 重新開啟生存輪次
+      </button>
+    </section>
+
+    <!-- 塊 3：記帳輸入藍光光圈區 -->
+    <section class="campus-card glow-action rounded-[28px] p-5 space-y-4">
+      <div class="flex justify-between items-center">
+        <span class="text-xs font-extrabold text-slate-300 tracking-wider uppercase">⚡ 記錄這一餐</span>
+        <span class="text-[11px] text-indigo-400 font-medium">選標籤或直接手動</span>
+      </div>
+
+      <div class="flex flex-wrap gap-1.5">
+        <button type="button" onclick="selectTag('麥當勞 🍔', 150)" class="tag-chip px-3 py-1.5 rounded-xl text-xs font-semibold">🍔 麥當勞</button>
+        <button type="button"  onclick="selectTag('超商 🏪', 89)" class="tag-chip px-3 py-1.5 rounded-xl text-xs font-semibold">🍱 便當</button>
+        <button type="button" onclick="selectTag('飲料🥤', 20)" class="tag-chip px-3 py-1.5 rounded-xl text-xs font-semibold">🥤 飲料</button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-[10px] text-slate-400 mb-1">金額 ($)</label>
+          <input type="number" id="expense-amount" placeholder="例如 110" 
+            class="w-full bg-white/5 border border-white/10 rounded-2xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="block text-[10px] text-slate-400 mb-1">自訂日期/時間</label>
+          <input type="datetime-local" id="expense-datetime" 
+            class="w-full bg-white/5 border border-white/10 rounded-2xl px-2.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+        </div>
+      </div>
+
+      <div>
+        <input type="text" id="expense-note" placeholder="吃什麼？（選填，例：加點雞塊或大碗）" 
+          class="w-full bg-white/5 border border-white/10 rounded-2xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+      </div>
+
+      <button onclick="addExpense()" 
+        class="w-full bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] py-3.5 rounded-2xl font-bold text-sm text-white shadow-lg shadow-indigo-600/30 transition">
+        送出這一頓
+      </button>
+    </section>
+
+    <!-- 塊 4：本輪明細紫光光圈區 -->
+    <section class="campus-card glow-logs rounded-[28px] p-5 space-y-3">
+      <div class="flex justify-between items-center">
+        <span class="text-xs font-extrabold text-slate-300 tracking-wider uppercase">📜 本輪餐點點數</span>
+        <span id="current-logs-count" class="text-[10px] bg-white/10 text-slate-300 px-2 py-0.5 rounded-full font-semibold">0 筆</span>
+      </div>
+      <div id="current-logs-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+        <div class="text-center py-6 text-xs text-slate-500">還沒開葷，目前額度安全</div>
+      </div>
+    </section>
+
+    <!-- 塊 5：歷史生存資料夾粉紅光圈區 -->
+    <section class="campus-card glow-archive rounded-[28px] p-5 space-y-3">
+      <div class="flex justify-between items-center">
+        <span class="text-xs font-extrabold text-slate-300 tracking-wider uppercase">📁 歷史生存資料夾（首尾扣款區間）</span>
+        <button onclick="resetAllData()" class="text-[10px] text-rose-400/80 hover:text-rose-300">重置全部</button>
+      </div>
+      <div id="archived-cycles-list" class="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+        <div class="text-center py-4 text-xs text-slate-500">無完結輪次資料夾</div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    function getLocalDatetimeString(d = new Date()) {
+      const pad = n => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function formatDisplayDate(isoStr) {
+      if (!isoStr) return '--';
+      const d = new Date(isoStr);
+      if (isNaN(d)) return isoStr;
+      const pad = n => String(n).padStart(2, '0');
+      return `${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    let appData = JSON.parse(localStorage.getItem('campus_lunch_app_v4')) || {
+      balance: 4000,
+      cycleIndex: 1,
+      startDate: new Date().toISOString().split('T')[0],
+      logs: [],
+      completedCycles: []
+    };
+
+    document.getElementById('expense-datetime').value = getLocalDatetimeString();
+    document.getElementById('cycle-start-date-input').value = appData.startDate;
+
+    function save() {
+      localStorage.setItem('campus_lunch_app_v4', JSON.stringify(appData));
+      render();
+    }
+
+    function updateCycleStartDate(val) {
+      if (!val) return;
+      appData.startDate = val;
+      save();
+    }
+
+    function selectTag(tagName, amount) {
+      document.getElementById('expense-amount').value = amount;
+      document.getElementById('expense-note').value = tagName;
+      document.querySelectorAll('.tag-chip').forEach(btn => {
+        if (btn.innerText.includes(tagName.split(' ')[0])) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    function addExpense() {
+      const amountInput = document.getElementById('expense-amount');
+      const datetimeInput = document.getElementById('expense-datetime');
+      const noteInput = document.getElementById('expense-note');
+
+      const val = parseInt(amountInput.value);
+      if (isNaN(val) || val <= 0) return alert('請輸入正常數字啦！');
+
+      const customDateTime = datetimeInput.value ? datetimeInput.value : getLocalDatetimeString();
+      const noteVal = noteInput.value.trim() || '一般午餐';
+
+      appData.balance -= val;
+      appData.logs.push({
+        id: Date.now(),
+        amount: val,
+        datetime: customDateTime,
+        note: noteVal
+      });
+
+      amountInput.value = '';
+      noteInput.value = '';
+      datetimeInput.value = getLocalDatetimeString();
+      document.querySelectorAll('.tag-chip').forEach(b => b.classList.remove('active'));
+
+      save();
+    }
+
+    function deleteLog(id) {
+      const idx = appData.logs.findIndex(l => l.id === id);
+      if (idx > -1) {
+        appData.balance += appData.logs[idx].amount;
+        appData.logs.splice(idx, 1);
+        save();
+      }
+    }
+
+    function refillMoney() {
+      // 計算實際第一筆扣款時間到最後一筆扣款時間
+      let actualStart = appData.startDate;
+      let actualEnd = formatDisplayDate(getLocalDatetimeString());
+
+      if (appData.logs.length > 0) {
+        actualStart = formatDisplayDate(appData.logs[0].datetime);
+        actualEnd = formatDisplayDate(appData.logs[appData.logs.length - 1].datetime);
+      }
+
+      appData.completedCycles.unshift({
+        cycle: appData.cycleIndex,
+        startDate: actualStart,
+        endDate: actualEnd,
+        count: appData.logs.length,
+        logs: [...appData.logs]
+      });
+
+      appData.cycleIndex += 1;
+      appData.balance = 4000;
+      appData.startDate = new Date().toISOString().split('T')[0];
+      document.getElementById('cycle-start-date-input').value = appData.startDate;
+      appData.logs = [];
+
+      save();
+    }
+
+    function resetAllData() {
+      if (confirm('重置所有資料重新來過？')) {
+        localStorage.removeItem('campus_lunch_app_v4');
+        location.reload();
+      }
+    }
+
+    function render() {
+      document.getElementById('balance-display').innerText = appData.balance.toLocaleString();
+      document.getElementById('cycle-badge').innerText = `第 ${appData.cycleIndex} 輪`;
+
+      const spentTotal = 4000 - appData.balance;
+      const spentPercent = Math.max(0, Math.min(100, (spentTotal / 4000) * 100));
+
+      document.getElementById('progress-bar').style.width = `${spentPercent}%`;
+      document.getElementById('progress-text').innerText = `已燃燒 ${Math.round(spentPercent)}%`;
+      document.getElementById('spent-total-text').innerText = `噴掉 $${spentTotal.toLocaleString()} / $4,000`;
+
+      const refillSec = document.getElementById('refill-section');
+      const vibesStatus = document.getElementById('vibes-status');
+
+      if (appData.balance <= 0) {
+        refillSec.classList.remove('hidden');
+        vibesStatus.innerHTML = `<span class="text-amber-400 font-bold">⚠️ 破產待救濟</span>`;
+        vibesStatus.className = 'text-xs font-bold text-amber-400 bg-amber-500/10 px-3 py-1.5 rounded-full border border-amber-500/20';
+      } else {
+        refillSec.classList.add('hidden');
+        vibesStatus.innerHTML = `生存率 ${Math.max(0, Math.round((appData.balance/4000)*100))}%`;
+        vibesStatus.className = 'text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20';
+      }
+
+      // 當前明細
+      const currentListEl = document.getElementById('current-logs-list');
+      document.getElementById('current-logs-count').innerText = `${appData.logs.length} 筆`;
+
+      if (appData.logs.length === 0) {
+        currentListEl.innerHTML = `<div class="text-center py-6 text-xs text-slate-500">還沒開吃，錢包很安全</div>`;
+      } else {
+        const sortedLogs = [...appData.logs].reverse();
+        currentListEl.innerHTML = sortedLogs.map(l => `
+          <div class="flex justify-between items-center bg-white/[0.03] border border-white/5 px-3.5 py-2.5 rounded-2xl text-xs">
+            <div class="space-y-0.5">
+              <div class="font-bold text-slate-200">${l.note}</div>
+              <div class="text-[10px] text-slate-500">${formatDisplayDate(l.datetime)}</div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-rose-400 font-extrabold">-$${l.amount}</span>
+              <button onclick="deleteLog(${l.id})" class="text-slate-600 hover:text-rose-400 text-[10px]">✕</button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // 歷史生存資料夾 (首尾扣款時間標示)
+      const archiveEl = document.getElementById('archived-cycles-list');
+      if (appData.completedCycles.length === 0) {
+        archiveEl.innerHTML = `<div class="text-center py-4 text-xs text-slate-500">無完結輪次資料夾</div>`;
+      } else {
+        archiveEl.innerHTML = appData.completedCycles.map(c => {
+          const folderLogsHtml = (!c.logs || c.logs.length === 0)
+            ? `<div class="text-[11px] text-slate-500 py-2 text-center">本輪無明細紀錄</div>`
+            : [...c.logs].reverse().map(l => `
+                <div class="flex justify-between items-center bg-black/30 px-3 py-2 rounded-xl text-xs">
+                  <div>
+                    <span class="font-semibold text-slate-200">${l.note}</span>
+                    <span class="text-[10px] text-slate-500 ml-1.5">${formatDisplayDate(l.datetime)}</span>
+                  </div>
+                  <span class="text-rose-400 font-bold">-$${l.amount}</span>
+                </div>
+              `).join('');
+
+          return `
+            <details class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden transition">
+              <summary class="px-3.5 py-3 flex justify-between items-center cursor-pointer select-none hover:bg-white/5">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm">📂</span>
+                  <div>
+                    <div class="font-bold text-slate-200 text-xs">第 ${c.cycle} 輪生存賽資料夾</div>
+                    <div class="text-[10px] text-emerald-400/90 font-mono">首扣: ${c.startDate} ➔ 末扣: ${c.endDate}</div>
+                  </div>
+                </div>
+                <div class="text-right flex items-center gap-2">
+                  <span class="text-emerald-400 font-semibold text-[11px]">${c.count}筆</span>
+                  <span class="text-[10px] text-slate-400">▾</span>
+                </div>
+              </summary>
+              <div class="px-3 pb-3 pt-1 space-y-1.5 border-t border-white/5 bg-black/20">
+                ${folderLogsHtml}
+              </div>
+            </details>
+          `;
+        }).join('');
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>
 
